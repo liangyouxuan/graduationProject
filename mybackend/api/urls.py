@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import RegisterView, get_smiles_list, get_structure, SmilesQueryView, get_query_history
+from .views import RegisterView, get_smiles_list, get_structure, SmilesQueryView, get_query_history, UserInfoView, ChangePasswordView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -18,4 +18,8 @@ urlpatterns = [
 
     # 获取当前用户的查询历史（需要登录）
     path("query_history/", get_query_history, name="query_history"),
+
+    # 用户相关的新接口
+    path('user/info/', UserInfoView.as_view(), name='user_info'),
+    path('user/change-password/', ChangePasswordView.as_view(), name='change_password'),
 ]

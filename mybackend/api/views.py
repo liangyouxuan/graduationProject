@@ -107,7 +107,7 @@ def get_structure(request):
 
     # 生成图片
     img_io = io.BytesIO()
-    img = Draw.MolToImage(mol, size=(300, 300))
+    img = Draw.MolToImage(mol, size=(800, 800))  # 增大图片尺寸
     img.save(img_io, format="PNG")
     img_io.seek(0)
 
@@ -132,7 +132,7 @@ class SmilesQueryView(APIView):
 
         # 生成图片
         img_io = io.BytesIO()
-        img = Draw.MolToImage(mol, size=(300, 300))
+        img = Draw.MolToImage(mol, size=(800, 800))  # 增大图片尺寸
         img.save(img_io, format="PNG")
         img_io.seek(0)
 
@@ -150,3 +150,43 @@ def get_query_history(request):
             for record in history
         ]
     })
+
+class UserInfoView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        return Response({
+            'username': user.username,
+            'last_login': user.last_login.strftime("%Y-%m-%d %H:%M:%S") if user.last_login else None
+        })
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+        
+        if not old_password or not new_password:
+            return Response({
+                'message': '请提供原密码和新密码'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        if not user.check_password(old_password):
+            return Response({
+                'message': '原密码不正确'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        if len(new_password) < 6:
+            return Response({
+                'message': '新密码长度不能小于6位'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({
+            'message': '密码修改成功'
+        })
